@@ -1,73 +1,70 @@
-# React + TypeScript + Vite
+# Лабораторна робота №11
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### Мета
 
-Currently, two official plugins are available:
+Навчитися створювати власний GitHub Workflow для збірки Docker-образу фронтенд-застосунку та його завантаження в GitHub Container Registry, а також ознайомитися з практичними аспектами контейнеризації фронтенд-проєктів.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+### Виконані дії
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. **Підготовка проєкту та середовища**
+   - Локально перевірено збірку фронтенд-застосунку через `npm install` та `npm run build`.
+   - Створено `Dockerfile`, який реалізує multi-stage збірку:
+     - **Stage 1**: встановлення залежностей через `npm install` та збірка застосунку.
+     - **Stage 2**: розгортання зібраного застосунку за допомогою `nginx`.
+   
+2. **Створення GitHub Workflow**
+   - Додано файл `.github/workflows/build-and-push.yml`.
+   - Workflow налаштовано з двома тригерами:
+     - **ручний запуск** (`workflow_dispatch`);
+     - **автоматичний запуск** при пуші у гілки `main` та `feature/*`.
+   - У workflow реалізовано один job із кроками:
+     1. Клонування репозиторію за допомогою `actions/checkout`.
+     2. Встановлення залежностей та збірка застосунку через `npm install` та `npm run build`.
+     3. Авторизація у GitHub Container Registry за допомогою `docker/login-action` із використанням автоматичного токена `GITHUB_TOKEN` та користувача `${{ github.actor }}`.
+     4. Збірка та пуш Docker-образу у GHCR із тегом у форматі:
+        ```
+        ghcr.io/<username>/<repository>:latest
+        ```
+        де `<username>` та `<repository>` приведені до нижнього регістру через кастомний step у workflow.
+   
+3. **Тестування workflow**
+   - Виконано ручний запуск workflow та перевірку автоматичного запуску при пуші.
+   - Після успішного виконання з’явився Docker-образ у вкладці **Packages** на GitHub.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Вивчене
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Основи GitHub Actions та принципи роботи workflow.
+- Як автоматизувати збірку фронтенд-застосунку і деплой Docker-образу у GitHub Container Registry.
+- Використання context змінних GitHub (`github.actor`, `github.event.repository.name`) і секретів (`GITHUB_TOKEN`) для безпечного доступу до репозиторію та GHCR.
+- Різниця між локальною збіркою через `npm` і збіркою у контейнері Docker.
+- Проблеми сумісності Node.js та Vite, важливість вибору правильної версії Node.js для успішної збірки.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Навички, набуті під час роботи
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Створення та налаштування **Dockerfile** для фронтенд-застосунку.
+- Використання multi-stage Docker build для оптимізації розміру образу.
+- Налаштування GitHub Actions workflow з різними тригерами і job steps.
+- Використання **Docker Buildx** для збірки та пушу образів у GHCR.
+- Практичне застосування Bash для кастомних кроків workflow, наприклад для приведення username і repository до lowercase.
+- Розуміння важливості версій Node.js та залежностей при побудові фронтенд-проєктів у контейнерах.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Висновки
+
+У ході виконання лабораторної роботи я детально ознайомився з процесом **автоматизації збірки і деплою фронтенд-застосунків у GitHub Actions** та практично відпрацював роботу з **Docker** і **GitHub Container Registry**. Я навчився створювати workflow із ручними та автоматичними тригерами, керувати залежностями Node.js у контейнері, правильно формувати Docker-образи і пушити їх у приватний registry.
+
+Контейнеризація фронтенд-застосунків дозволяє забезпечити стабільність середовища, швидку збірку і розгортання, а інтеграція з GitHub Actions дає змогу автоматизувати весь процес CI/CD, що підвищує ефективність роботи команди і зменшує ймовірність помилок.
+
+В результаті виконання роботи я:
+
+- Отримав практичний досвід створення GitHub Workflow для CI/CD.
+- Навчився збирати і деплоїти Docker-образи фронтенду.
+- Ознайомився з роботою з GitHub Container Registry.
+- Розвинув навички використання автоматизації для забезпечення стабільності і повторюваності збірок.
