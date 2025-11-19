@@ -32,10 +32,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - id: lowerUser
+        shell: bash
+        run: |
+          USER="${{ github.actor }}"
+          echo "value=${USER,,}" >> $GITHUB_OUTPUT
+
+      - id: lowerRepo
+        shell: bash
+        run: |
+          REPO="${{ github.event.repository.name }}"
+          echo "value=${REPO,,}" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.actor | lower }}/${{ github.event.repository.name | lower }}:latest
+          tags: ghcr.io/${{ steps.lowerUser.outputs.value }}/${{ steps.lowerRepo.outputs.value }}:latest
+
 
