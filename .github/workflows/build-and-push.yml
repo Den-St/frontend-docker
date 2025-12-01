@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies and build
         run: |
-          npm install
+          pnpm install
           npm run build
 
       - name: Login to GitHub Container Registry
