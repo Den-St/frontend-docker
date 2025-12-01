@@ -63,6 +63,6 @@ jobs:
         - name: Deploy to Azure Web App
           uses: azure/webapps-deploy@v2
           with:
-            app-name: cicd-workshop
+            app-name: kpz9-frontend
             images: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
 
